@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class LoginRequest(BaseModel):
     username: str
@@ -10,4 +11,4 @@ class LoginResponse(BaseModel):
 
 class UserInfo(BaseModel): 
     username: str
-    permissions: str
+    permissions: List[str]

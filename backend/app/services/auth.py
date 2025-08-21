@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # test user store
 USERS = {
     "admin": {
-        "username": "test_admin",
+        "username": "admin",
         "hashed_password": pwd_context.hash("test123"),
         "permissions": ["read", "write", "delete"]
     }

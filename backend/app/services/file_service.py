@@ -8,6 +8,8 @@ from app.utils.exceptions import FileNotFoundError, InvalidPathError
 class FileService:
     def __init__(self):
         self.storage_path = Path(STORAGE_PATH)
+        # make sure storage dir exists
+        self.storage_path.mkdir(parents=True, exist_ok=True)
 
     def _get_safe_path(self, path: str) -> str:
         # normalize paths
@@ -16,7 +18,7 @@ class FileService:
 
         # confirm path is within storage
         try:
-            full_path.resolve().relative_to(self.storage_path)
+            full_path.resolve().relative_to(self.storage_path.resolve())
         except:
             raise InvalidPathError(path)
         
