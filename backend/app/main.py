@@ -2,7 +2,7 @@ from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import API_V1_PREFIX, CORS_ORIGINS
-from app.routers import health, auth
+from app.routers import health, auth, files
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 import logging
@@ -50,6 +50,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(auth.router, prefix=API_V1_PREFIX)
+app.include_router(files.router, prefix=API_V1_PREFIX)
 
 if __name__ == "__main__":
     import uvicorn
