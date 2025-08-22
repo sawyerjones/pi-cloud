@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, status
-from app.models.auth import LoginRequest, LoginResponse
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.models.auth import LoginRequest, LoginResponse, UserInfo
 from app.services.auth import AuthService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+security = HTTPBearer()
+
+# dependency to get current authenticated user from JWT token
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    return AuthService.verify_token(credentials.credentials)
 
 @router.post("/login", response_model=LoginResponse)
 async def login(login_data: LoginRequest):
@@ -19,3 +25,19 @@ async def login(login_data: LoginRequest):
         access_token=access_token,
         token_type="bearer"
     )
+
+@router.get("/me", response_model=UserInfo)
+async def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    return UserInfo(
+        username=current_user["username"],
+        permissions=current_user["permissions"]
+    )
+
+# verifies if current token is valid
+@router.post("/verify")
+async def verify_token(current_user: dict = Depends(get_current_user)):
+    return {
+        "valid": True,
+        "username": current_user["username"],
+        "permissions": current_user["permissions"]
+    }

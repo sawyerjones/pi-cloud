@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
+from fastapi import HTTPException, status
 from app.config import SECRET_KEY
 
 # password hashing
@@ -33,3 +34,30 @@ class AuthService:
         expire = datetime.utcnow() + timedelta(minutes=30)
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
+    
+    @staticmethod
+    def verify_token(token: str) -> dict:
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            username: str = payload.get("sub")
+
+            if username is None:
+                raise credentials_exception
+
+            # check if user still exists
+            user = USERS.get(username)
+            if user is None:
+                raise credentials_exception
+            return {
+                "username": username,
+                "permissions": user.get("permissions", [])
+            }
+        except JWTError: 
+            raise credentials_exception
+
