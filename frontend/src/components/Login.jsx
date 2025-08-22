@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Box, Card, CardContent, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
+import { Box, Card, CardContent, TextField, Button, Typography, Alert, CircularProgress, Container } from '@mui/material';
+import { CloudOutlined } from '@mui/icons-material';
 import { useAuth } from "../contexts/AuthContext";
 
 
@@ -9,36 +10,48 @@ const Login = () => {
     const { login, loading, error } = useAuth();
 
     const handleSubmit = async (e) => {
+        console.log("handlesubmit fired");
         e.preventDefault();
         await login(username, password);
     }
-
     return (
+        <Container component="main" maxWidth="sm">
         <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            minHeight="100vh"
-            bgcolor="grey.100"
+            sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'grey.50',
+            }}
         >
-            <Card sx={{ minWidth: 400, maxWidth: 500 }}>
-                <CardContent sx={{ p: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom align="center">
+            <Card
+            sx={{
+                width: '100%',
+                maxWidth: 400,
+                boxShadow: 3,
+            }}
+            >
+            <CardContent sx={{ p: 4 }}>
+                <Box sx={{ textAlign: 'center', mb: 4 }}>
+                <CloudOutlined sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h4" component="h1" gutterBottom>
                     File Server
                 </Typography>
-                
-                <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                    Sign in to access your files
+                <Typography variant="body2" color="text.secondary">
+                    Sign in to access personal cloud storage
                 </Typography>
+                </Box>
 
                 {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mb: 3 }}>
                     {error}
-                    </Alert>
+                </Alert>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <TextField
+                <TextField
                     fullWidth
                     label="Username"
                     variant="outlined"
@@ -47,9 +60,10 @@ const Login = () => {
                     onChange={(e) => setUsername(e.target.value)}
                     disabled={loading}
                     required
-                    />
-                    
-                    <TextField
+                    autoFocus
+                />
+                
+                <TextField
                     fullWidth
                     label="Password"
                     type="password"
@@ -59,27 +73,30 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
                     required
-                    />
+                />
 
-                    <Button
+                <Button
                     type="submit"
                     fullWidth
                     variant="contained"
                     sx={{ mt: 3, mb: 2 }}
                     disabled={loading}
                     size="large"
-                    >
+                >
                     {loading ? <CircularProgress size={24} /> : 'Sign In'}
-                    </Button>
+                </Button>
                 </form>
 
-                <Typography variant="caption" color="text.secondary" align="center" display="block">
-                    Default: admin / test123
+                <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <Typography variant="caption" color="text.secondary">
+                    Default credentials: test_admin / test123
                 </Typography>
-                </CardContent>
+                </Box>
+            </CardContent>
             </Card>
-            </Box>
+        </Box>
+        </Container>
     );
-}
+};
 
 export default Login;

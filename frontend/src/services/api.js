@@ -28,6 +28,7 @@ api.interceptors.response.use(
     (error) => {
         // on error remove any auth and kick back to login
         if (error.response?.status === 401) {
+            console.log("js is recieving 401 exception")
             localStorage.removeItem('authToken');
             window.location.href = '/login';
         }

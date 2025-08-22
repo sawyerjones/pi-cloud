@@ -13,7 +13,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 @router.post("/login", response_model=LoginResponse)
 async def login(login_data: LoginRequest):
     user = AuthService.authenticate_user(login_data.username, login_data.password)
-
     if not user: 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
