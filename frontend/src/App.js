@@ -1,7 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { AuthProvider } from './contexts/AuthContext';
+import Login from './components/Login';
 import './App.css';
 
 const theme = createTheme({
@@ -17,12 +19,13 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <AuthProvider>
       <Router>
-        <div className="App">
-          <h1>File Server</h1>
-          <p>Frontend connected, backend running on port 8000</p>
-        </div>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+          </Routes>
       </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
