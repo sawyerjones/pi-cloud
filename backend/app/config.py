@@ -5,7 +5,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 
 STORAGE_PATH = config("STORAGE_PATH")
-MAX_FILE_SIZE = config("MAX_FILE_SIZE")
+MAX_FILE_SIZE = config("MAX_FILE_SIZE", cast=int)
 
 API_V1_PREFIX = "/api/v1"
 CORS_ORIGINS = config("CORS_ORIGINS")

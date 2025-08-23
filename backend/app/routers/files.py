@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Query, Depends
-from app.models.files import DirectoryListing
+from fastapi import APIRouter, Query, Depends, UploadFile, File, HTTPException
+from typing import List, Optional
+import urllib.parse
+from app.models.files import DirectoryListing, FileItem
 from app.services.file_service import FileService
+from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -14,3 +17,11 @@ async def list_directory(
 ):
     # lists directories contents
     return await file_service.list_directory(path)
+
+@router.post("/upload")
+async def upload_file(
+    path: str = Query("/", description="Destination to directory path"),
+    file: UploadFile = File(..., description="File to upload"),
+    file_service: FileService = Depends(get_file_service),
+):
+    return await file_service.upload_file(file, path)
