@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Card, CardContent, TextField, Button, Typography, Alert, CircularProgress, Container } from '@mui/material';
 import { CloudOutlined } from '@mui/icons-material';
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 
@@ -9,10 +10,15 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const { login, loading, error } = useAuth();
 
+    let navigate = useNavigate();
+
     const handleSubmit = async (e) => {
         console.log("handlesubmit fired");
         e.preventDefault();
-        await login(username, password);
+        const success = await login(username, password);
+        if (success) {
+            navigate('/files');
+        }
     }
     return (
         <Container component="main" maxWidth="sm">

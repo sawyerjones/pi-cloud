@@ -5,6 +5,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import './App.css';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './components/Layout';
+import FileBrowser from './components/FileBrowser';
 
 const theme = createTheme({
   palette: {
@@ -35,6 +38,13 @@ function App() {
       <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/files" element={
+              <ProtectedRoute>
+                <Layout>
+                  <FileBrowser />
+                </Layout>
+              </ProtectedRoute>
+            } />
           </Routes>
       </Router>
       </AuthProvider>
