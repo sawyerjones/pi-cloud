@@ -104,5 +104,8 @@ class FileService:
         except Exception as e:
             # internal server error
             raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+        
+
+    # TODO: build createDirectory
 
         

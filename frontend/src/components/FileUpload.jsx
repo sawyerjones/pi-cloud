@@ -18,11 +18,26 @@ const FileUpload = ({ currentPath, onUploadComplete }) => {
     // handle multiple files later
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
-        multiple: false,
+        multiple: true,
+         accept: {
+            'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.bmp', '.webp'],
+            'application/pdf': ['.pdf'],
+            'application/msword': ['.doc'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+            'text/*': ['.txt', '.csv', '.json', '.xml'],
+            'application/zip': ['.zip', '.rar', '.7z'],
+            'video/*': ['.mp4', '.avi', '.mov', '.wmv'],
+            'audio/*': ['.mp3', '.wav', '.ogg', '.flac'],
+            },
     });
 
     const removeFile = (index) => {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    }
+
+    const clearAllFiles = () => {
+        setSelectedFiles([]);
+        setError(null);
     }
 
     const uploadFiles = async () => {
@@ -32,10 +47,13 @@ const FileUpload = ({ currentPath, onUploadComplete }) => {
         setError(null);
 
         try {
-            const file = selectedFiles[0];
-            setUploadProgress(0);
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                setUploadProgress((i / selectedFiles.length) * 100);
             
-            await fileService.uploadFile(file, currentPath);
+                await fileService.uploadFile(file, currentPath);
+            }
+            
             setUploadProgress(100);
             setSelectedFiles([]);
             onUploadComplete?.();
