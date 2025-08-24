@@ -26,6 +26,13 @@ export const fileService = {
             params: { path, name }
         });
         return response.data;
+    },
+
+    deleteFile: async (path) => {
+        const response = await api.delete('/files/delete', {
+            params: { path: path}
+        });
+        return response.data;
     }
 
     }

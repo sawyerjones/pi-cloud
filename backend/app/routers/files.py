@@ -33,3 +33,10 @@ async def create_directory(
     file_service: FileService = Depends(get_file_service)
 ):
     return await file_service.create_directory(path, name)
+
+@router.delete("/delete")
+async def delete_file(
+    path: str = Query(..., description="File or directory path to delete"),
+    file_service: FileService = Depends(get_file_service)
+):
+    return await file_service.delete_file(path)

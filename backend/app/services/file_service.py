@@ -128,4 +128,22 @@ class FileService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Create directory failed: {str(e)}")
 
+    async def delete_file(self, path: str) -> dict:
+        try :
+            target_path = self._get_safe_path(path)
+            if not target_path.exists():
+                raise FileNotFoundError(path)
+            
+            if target_path.is_dir():
+                shutil.rmtree(target_path)
+                message = "Directory successfully deleted"
+            else:
+                target_path.unlink()
+                message = "File deleted successfully"
+
+            return {"message": message, "path": path}
         
+        except (FileNotFoundError, InvalidPathError):
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
