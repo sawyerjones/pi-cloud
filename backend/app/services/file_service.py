@@ -6,6 +6,7 @@ from datetime import datetime
 from fastapi import HTTPException, UploadFile
 from pathvalidate import is_valid_filename
 import aiofiles
+from typing import Tuple
 
 from app.config import STORAGE_PATH, MAX_FILE_SIZE
 from app.models.files import FileItem, FileType, DirectoryListing
@@ -147,3 +148,22 @@ class FileService:
             raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
+        
+    async def download_file(self, path: str) -> Tuple[Path, str]:
+        # get safe path and media (MIME) type
+        try:
+            target_path = self._get_safe_path(path)
+            if not target_path.exists():
+                raise FileNotFoundError(path)
+            # TODO: handle downloading directories
+            if target_path.is_dir():
+                raise HTTPException(status_code=400, detail="Cannot download directories")
+            
+            mime_type = mimetypes.guess_type(str(target_path))[0] 
+
+            return target_path, mime_type
+
+        except (FileNotFoundError, InvalidPathError):
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")

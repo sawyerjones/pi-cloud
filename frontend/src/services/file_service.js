@@ -33,6 +33,31 @@ export const fileService = {
             params: { path: path}
         });
         return response.data;
+    },
+
+    downloadFile: async (path) => {
+        const response = await api.get('/files/download', {
+            params: { path },
+            responseType: 'blob'
+        });
+        // download link
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        let filename = path.split('/').pop();
+        const contentDisposition = response.headers['Content-Disposition'];
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="(.+)"/);
+            if (match) {
+                filename = match[1];
+            }
+        }
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     }
 
     }

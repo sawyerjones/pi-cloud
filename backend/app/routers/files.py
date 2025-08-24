@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query, Depends, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
 from typing import List, Optional
 import urllib.parse
 from app.models.files import DirectoryListing, FileItem
@@ -40,3 +41,21 @@ async def delete_file(
     file_service: FileService = Depends(get_file_service)
 ):
     return await file_service.delete_file(path)
+
+@router.get('/download')
+async def download_file(
+    path: str = Query(..., description="File path to download"),
+    file_service: FileService = Depends(get_file_service)
+): 
+    target_path, mime_type = await file_service.download_file(path)
+    # URL decode
+    filename = urllib.parse.unquote(target_path.name)
+
+    return FileResponse(
+        path=str(target_path),
+        filename=filename,
+        media_type=mime_type,
+        headers={
+            "Content-Disposition": f'attatchment; filename="{filename}"'
+        }
+    )
