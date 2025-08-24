@@ -25,3 +25,11 @@ async def upload_file(
     file_service: FileService = Depends(get_file_service),
 ):
     return await file_service.upload_file(file, path)
+
+@router.post("/mkdir")
+async def create_directory(
+    path: str = Query(..., description="Parent directory path"),
+    name: str = Query(..., description="New directory name"),
+    file_service: FileService = Depends(get_file_service)
+):
+    return await file_service.create_directory(path, name)

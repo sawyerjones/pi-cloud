@@ -106,6 +106,26 @@ class FileService:
             raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
         
 
-    # TODO: build createDirectory
+    async def create_directory(self, path: str, name: str) -> dict:
+        try:
+            parent_dir = self._get_safe_path(path)
+            new_dir = parent_dir / name
+            
+            if not is_valid_filename(name):
+                raise HTTPException(status_code=400, detail="Invalid directory name")
+            if new_dir.exists():
+                raise HTTPException(status_code=409, detail="Directory already exists")
+            
+            new_dir.mkdir(parents=True, exist_ok=True)
+
+            return {
+                "message": "Directory successfully created",
+                "path": str(new_dir.relative_to(self.storage_path))
+            }
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Create directory failed: {str(e)}")
 
         

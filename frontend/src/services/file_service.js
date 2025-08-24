@@ -19,6 +19,13 @@ export const fileService = {
             },
         });
         return response.data;
+    },
+
+    createDirectory: async (name, path ='/') => {
+        const response = await api.post('/files/mkdir', null, {
+            params: { path, name }
+        });
+        return response.data;
     }
 
     }

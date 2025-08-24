@@ -37,7 +37,6 @@ import {
   CreateNewFolderOutlined,
   DownloadOutlined,
   DeleteOutlined,
-  DriveFileMoveOutlined,
   RefreshOutlined,
 } from '@mui/icons-material';
 import { fileService } from '../services/file_service';
@@ -146,7 +145,7 @@ const FileBrowser = ({
     if (!newFolderName.trim()) return;
 
     try {
-      await fileService.createDirectory(currentPath, newFolderName);
+      await fileService.createDirectory(newFolderName, currentPath);
       showSnackbar('Folder created successfully');
       setNewFolderName('');
       setShowCreateDialog(false);
