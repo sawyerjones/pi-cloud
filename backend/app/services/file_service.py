@@ -61,8 +61,6 @@ class FileService:
         )
 
     async def upload_file(self, file: UploadFile, destination_path: str = "/"):
-        print("file.size: ", file.size, " type of: ", type(file.size))
-        print("MAX_FILE_SIZE: ", MAX_FILE_SIZE, " type of ", type(MAX_FILE_SIZE))
         try:
             if file.size and file.size > MAX_FILE_SIZE:
                 # payload too large
