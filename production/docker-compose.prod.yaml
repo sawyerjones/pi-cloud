@@ -1,0 +1,67 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: dockerfile.prod
+    container_name: fileserver-backend-prod
+    restart: unless-stopped
+    volumes:
+    - storage_data:/app/storage
+    environment:
+    - ENV=production
+    - DEBUG=false
+    env_file:
+      - .env.production
+    secrets:
+    - jwt_secret
+    networks:
+    - internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: dockerfile.prod
+    container_name: fileserver-frontend-prod
+    restart: unless-stopped
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    container_name: fileserver-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs:/var/log/nginx:rw
+    networks:
+      - internal
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  networks:
+    internal:
+      driver: bridge
+      internal: false
+  
+  volumes:
+    storage_data:
+      driver: local
+  
+  secrets:
+    jwt_secret:
+      file: ./secrets/jwt_secret.txt

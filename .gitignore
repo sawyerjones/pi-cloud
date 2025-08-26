@@ -4,6 +4,14 @@
 
 backend/storage/
 backend/uploads/
+/data
+
+secrets/
+*.secret
+ssl/
+logs/
+docker-volume-*
+backups/
 
 
 # Python
