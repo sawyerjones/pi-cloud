@@ -53,15 +53,15 @@ services:
       timeout: 10s
       retries: 3
 
-  networks:
-    internal:
-      driver: bridge
-      internal: false
+networks:
+  internal:
+    driver: bridge
+    internal: false
   
-  volumes:
-    storage_data:
-      driver: local
+volumes:
+  storage_data:
+    driver: local
   
-  secrets:
-    jwt_secret:
-      file: ./secrets/jwt_secret.txt
+secrets:
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
