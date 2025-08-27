@@ -11,7 +11,7 @@ RUN npm run build
 
 FROM nginx:alpine
 
-# copy built app (https://gist.github.com/leommoore/2701379)
+# copy built app (https://gist.github.com/leommoore/2701379) (react-router here)
 COPY --from=build /app/build /usr/share/nginx/html
 
 COPY nginx.frontend.conf /ect/nginx/conf.d/default.conf
