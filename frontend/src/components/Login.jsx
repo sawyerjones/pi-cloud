@@ -13,7 +13,6 @@ const Login = () => {
     let navigate = useNavigate();
 
     const handleSubmit = async (e) => {
-        console.log("handlesubmit fired");
         e.preventDefault();
         const success = await login(username, password);
         if (success) {
@@ -94,9 +93,6 @@ const Login = () => {
                 </form>
 
                 <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Typography variant="caption" color="text.secondary">
-                    Default credentials: test_admin / test123
-                </Typography>
                 </Box>
             </CardContent>
             </Card>

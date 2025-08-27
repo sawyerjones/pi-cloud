@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Box, Paper, Typography, LinearProgress, Alert, Chip, IconButton } from '@mui/material';
+import { Box, Paper, Typography, LinearProgress, Alert, Chip } from '@mui/material';
 import { CloudUploadOutlined, DeleteOutlined } from '@mui/icons-material';
 import { fileService } from '../services/file_service';
 
