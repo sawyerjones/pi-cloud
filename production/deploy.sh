@@ -12,13 +12,13 @@ echo "Pi IP: $PI_IP"
 git pull origin main
 
 # Build production images
-docker-compose -f docker-compose.prod.yml build --no-cache
+docker-compose -f docker-compose.prod.yaml build --no-cache
 
 # Stop development containers
 docker-compose down
 
 # Start production containers
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yaml up -d
 
 # Wait for services to be healthy
 echo "Waiting for services to start..."
@@ -31,4 +31,4 @@ echo "Production deployment complete!"
 echo "Access your application at: https://$PI_IP"
 
 # Show service status
-docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yaml ps
