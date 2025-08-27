@@ -15,7 +15,18 @@ logger = logging.getLogger(__name__)
 #TODO actually use DB for users
 
 class AuthService:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AuthService, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return
+        
         admin_password = os.getenv('ADMIN_PASSWORD', 'setupdb')
         self.USERS = {
             "admin": {
@@ -25,6 +36,7 @@ class AuthService:
                 "permissions": ["read", "write", "delete"],
             }
         }
+        self._initialized = True
     @staticmethod
     def verifyPassword(plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
@@ -47,7 +59,7 @@ class AuthService:
         return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
     
     @staticmethod
-    def verify_token(token: str) -> dict:
+    def verify_token(self, token: str) -> dict:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -62,7 +74,7 @@ class AuthService:
                 raise credentials_exception
 
             # check if user still exists
-            user = USERS.get(username)
+            user = self.USERS.get(username)
             if user is None:
                 raise credentials_exception
             return {
@@ -72,3 +84,4 @@ class AuthService:
         except JWTError: 
             raise credentials_exception
 
+auth_service = AuthService()
