@@ -8,6 +8,7 @@ def get_jwt_secret():
             secret = f.read().strip()
             if secret:
                 return secret
+
     except (FileNotFoundError, IOError):
         pass
     

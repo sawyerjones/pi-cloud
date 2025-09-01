@@ -10,6 +10,8 @@ services:
     volumes:
       - ./backend/storage:/app/storage
       - ./backend:/app
+    env_file:
+      - ./backend/.env
     environment:
       - ENV=development
       - DEBUG=true
@@ -25,6 +27,8 @@ services:
       - "3000:3000"
     volumes: 
       - ./frontend/src:/app/src
+    env_file:
+      - ./frontend/.env
     networks:
       - fileserver-network
     depends_on:

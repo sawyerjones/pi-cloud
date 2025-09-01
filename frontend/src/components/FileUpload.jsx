@@ -35,6 +35,7 @@ const FileUpload = ({ currentPath, onUploadComplete }) => {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     }
 
+    // eslint-disable-next-line
     const clearAllFiles = () => {
         setSelectedFiles([]);
         setError(null);

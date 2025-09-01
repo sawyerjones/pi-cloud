@@ -11,7 +11,7 @@ services:
     - ENV=production
     - DEBUG=false
     env_file:
-      - .env.production
+      - ./backend/.env
     secrets:
     - jwt_secret
     networks:
@@ -28,6 +28,8 @@ services:
       dockerfile: dockerfile.prod
     container_name: fileserver-frontend-prod
     restart: unless-stopped
+    env_file:
+      - ./frontend/.env
     networks:
       - internal
 

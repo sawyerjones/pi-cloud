@@ -12,8 +12,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 logger = logging.getLogger(__name__)
 
-#TODO actually use DB for users
-
 class AuthService:
     _instance = None
 
@@ -24,9 +22,10 @@ class AuthService:
         return cls._instance
 
     def __init__(self):
+
         if self._initialized:
             return
-        
+        #TODO actually use DB for users
         admin_password = os.getenv('ADMIN_PASSWORD', 'setupdb')
         self.USERS = {
             "admin": {
@@ -37,18 +36,23 @@ class AuthService:
             }
         }
         self._initialized = True
-    @staticmethod
-    def verifyPassword(plain_password: str, hashed_password: str) -> bool:
+
+    def verifyPassword(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)
     
-    @staticmethod
+
     def authenticate_user(self, username: str, password: str):
         user = self.USERS.get(username)
-        if not user or not AuthService.verifyPassword(password, user["hashed_password"]):
+
+        if not user:
             logger.warning(f"Login attempt for non-existant user: {username}")
             return None
         
-        logger.info(f"Successful login for user: {username}")
+        password_valid = self.verifyPassword(password, user["hashed_password"])
+    
+        if not password_valid:
+            return None
+        
         return user
     
     @staticmethod
@@ -57,8 +61,7 @@ class AuthService:
         expire = datetime.utcnow() + timedelta(minutes=30)
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
-    
-    @staticmethod
+
     def verify_token(self, token: str) -> dict:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
