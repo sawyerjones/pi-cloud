@@ -1,0 +1,109 @@
+on:
+  schedule:
+    # 8 am pst
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check API Health
+        id: api-check
+        run: |
+          API_URL="${{ vars.API_URL }}"
+
+          echo "Checking API at: $API_URL"
+          
+          if curl -f -s -o /dev/null -w "%{http_code}" --max-time 30 --connect-timeout 10 "$API_URL" > response_code.txt; then
+          RESPONSE_CODE=$(cat response_code.txt)
+          if [ "$RESPONSE_CODE" -ge 200 ] && [ "$RESPONSE_CODE" -lt 300 ]; then
+            echo "API is healthy - HTTP $RESPONSE_CODE"
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=API is responding with HTTP $RESPONSE_CODE" >> $GITHUB_OUTPUT
+          else
+            echo "API returned HTTP $RESPONSE_CODE"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=API returned HTTP $RESPONSE_CODE" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          else
+            echo "API check failed - connection error or timeout"
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=API check failed - connection error or timeout" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+              const title = `🚨 API Health Check Failed - ${new Date().toISOString().split('T')[0]}`;
+              const body = `
+              ## API Health Check Failed
+              
+              **Time:** ${new Date().toISOString()}
+              **Status:** ${{ steps.api-check.outputs.status }}
+              **Message:** ${{ steps.api-check.outputs.message }}
+              **API URL:** ${{ vars.API_URL || 'https://your-api-endpoint.com/health' }}
+              
+              Please investigate the API status.
+              
+              _This issue was automatically created by the API Health Check workflow._
+              `;
+              
+              // check if an issue already exists for today
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['api-health-check'],
+                state: 'open'
+              });
+
+              const today = new Date().toISOString().split('T')[0];
+              const existingIssue = issues.data.find(issue => 
+                issue.title.includes(today)
+              );
+              
+              if (!existingIssue) {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: title,
+                  body: body,
+                  labels: ['api-health-check', 'bug']
+                });
+              }
+              
+      - name: Close Previous Issues on Success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+            script: |
+              // Close any open API health check issues since the API is now working
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['api-health-check'],
+                state: 'open'
+              });
+              
+              for (const issue of issues.data) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ API is now responding correctly. Closing this issue automatically.`
+                });
+                
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+              }
+              
