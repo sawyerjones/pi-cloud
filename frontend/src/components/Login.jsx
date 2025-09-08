@@ -42,7 +42,7 @@ const Login = () => {
                 <Box sx={{ textAlign: 'center', mb: 4 }}>
                 <CloudOutlined sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h4" component="h1" gutterBottom>
-                    File Server
+                   pi cloud
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                     Sign in to access personal cloud storage

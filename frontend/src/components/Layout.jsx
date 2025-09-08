@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
         <Toolbar>
           <FolderOutlined sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            File Server
+            pi cloud
           </Typography>
           
           <Typography variant="body2" sx={{ mr: 2 }}>
