@@ -13,7 +13,7 @@ jobs:
       - name: Check API Health
         id: api-check
         run: |
-          API_URL="${{ vars.API_URL }}"
+          API_URL="${{ https://pi-cloud.xyz/health }}"
 
           echo "Checking API at: $API_URL"
           
@@ -41,7 +41,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-              const title = `🚨 API Health Check Failed - ${new Date().toISOString().split('T')[0]}`;
+              const title = `API Health Check Failed - ${new Date().toISOString().split('T')[0]}`;
               const body = `
               ## API Health Check Failed
               
@@ -96,7 +96,7 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
-                  body: `✅ API is now responding correctly. Closing this issue automatically.`
+                  body: `API is now responding correctly. Closing this issue automatically.`
                 });
                 
                 await github.rest.issues.update({
