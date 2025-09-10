@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Box, Paper, Typography, LinearProgress, Alert, Chip } from '@mui/material';
-import { CloudUploadOutlined, DeleteOutlined } from '@mui/icons-material';
+import { Box, Paper, Typography, LinearProgress, Alert, Chip, Button, Fade } from '@mui/material';
+import { CloudUploadOutlined, DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { fileService } from '../services/file_service';
 
 const FileUpload = ({ currentPath, onUploadComplete }) => {
@@ -74,72 +74,151 @@ const FileUpload = ({ currentPath, onUploadComplete }) => {
       <Paper
         {...getRootProps()}
         sx={{
-          p: 3,
+          p: 4,
           textAlign: 'center',
           border: '2px dashed',
-          borderColor: isDragActive ? 'primary.main' : 'grey.300',
-          bgcolor: isDragActive ? 'action.hover' : 'background.paper',
+          borderColor: isDragActive ? 'primary.main' : 'rgba(255, 255, 255, 0.2)',
+          background: isDragActive 
+            ? 'rgba(0, 212, 255, 0.1)' 
+            : 'rgba(20, 20, 30, 0.6)',
+          backdropFilter: 'blur(20px)',
           cursor: 'pointer',
-          transition: 'all 0.2s ease',
+          transition: 'all 0.3s ease',
+          borderRadius: 3,
+          position: 'relative',
+          overflow: 'hidden',
+          '&:hover': {
+            borderColor: 'primary.main',
+            background: 'rgba(0, 212, 255, 0.05)',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(0, 212, 255, 0.2)',
+          },
         }}
       >
         <input {...getInputProps()} />
-        <CloudUploadOutlined sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-        <Typography variant="h6" gutterBottom>
-          {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          or click to select file
-        </Typography>
+        
+        <Box>
+          <CloudUploadOutlined 
+            sx={{ 
+              fontSize: 48, 
+              color: isDragActive ? 'primary.main' : 'text.secondary',
+              mb: 2,
+              transition: 'all 0.2s ease',
+            }} 
+          />
+          
+          <Typography 
+            variant="h6" 
+            gutterBottom
+            sx={{
+              color: isDragActive ? 'primary.main' : 'text.primary',
+              fontWeight: 500,
+              mb: 1,
+            }}
+          >
+            {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            or click to select files
+          </Typography>
+          
+          <Typography variant="caption" color="text.secondary">
+            Supports: Images, PDFs, Documents, Archives, Media files
+          </Typography>
+        </Box>
       </Paper>
 
       {selectedFiles.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Selected File ({selectedFiles.length}):
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-            {selectedFiles.map((file, index) => (
-              <Chip
-                key={index}
-                label={file.name}
-                onDelete={() => removeFile(index)}
-                deleteIcon={<DeleteOutlined />}
-                variant="outlined"
-              />
-            ))}
+        <Fade in timeout={300}>
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+              Selected Files ({selectedFiles.length})
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+              {selectedFiles.map((file, index) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  onDelete={() => removeFile(index)}
+                  deleteIcon={<DeleteOutlined />}
+                  variant="outlined"
+                  sx={{
+                    borderColor: 'rgba(0, 212, 255, 0.3)',
+                    color: 'primary.main',
+                    '& .MuiChip-deleteIcon': {
+                      color: 'secondary.main',
+                      '&:hover': {
+                        color: 'secondary.dark',
+                      },
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+            
+            <Button
+              onClick={uploadFiles}
+              disabled={uploading}
+              variant="contained"
+              size="large"
+              startIcon={uploading ? <UploadFileOutlined /> : <CloudUploadOutlined />}
+              sx={{
+                py: 1.5,
+                px: 4,
+                fontSize: '1rem',
+                fontWeight: 500,
+              }}
+            >
+              {uploading ? 'Uploading...' : 'Upload Files'}
+            </Button>
           </Box>
-          
-          <button
-            onClick={uploadFiles}
-            disabled={uploading}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#1976d2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: uploading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {uploading ? 'Uploading...' : 'Upload Files'}
-          </button>
-        </Box>
+        </Fade>
       )}
 
       {uploading && (
-        <Box sx={{ mt: 2 }}>
-          <LinearProgress variant="determinate" value={uploadProgress} />
-          <Typography variant="caption" color="text.secondary">
-            {Math.round(uploadProgress)}% complete
-          </Typography>
-        </Box>
+        <Fade in timeout={300}>
+          <Box sx={{ mt: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Typography variant="body1" sx={{ mr: 2, color: 'primary.main', fontWeight: 500 }}>
+                Uploading...
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {Math.round(uploadProgress)}% complete
+              </Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={uploadProgress}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                background: 'rgba(255, 255, 255, 0.1)',
+                '& .MuiLinearProgress-bar': {
+                  background: '#00d4ff',
+                  borderRadius: 3,
+                },
+              }}
+            />
+          </Box>
+        </Fade>
       )}
 
       {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
+        <Fade in timeout={300}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mt: 3,
+              background: 'rgba(255, 0, 128, 0.1)',
+              border: '1px solid rgba(255, 0, 128, 0.3)',
+              '& .MuiAlert-icon': {
+                color: 'secondary.main',
+              }
+            }}
+          >
+            {error}
+          </Alert>
+        </Fade>
       )}
     </Box>
   );
