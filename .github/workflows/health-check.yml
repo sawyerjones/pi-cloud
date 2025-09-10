@@ -17,7 +17,7 @@ jobs:
       - name: Check API Health
         id: api-check
         run: |
-          API_URL="${{ https://pi-cloud.xyz/health }}"
+          API_URL="https://pi-cloud.xyz/health"
 
           echo "Checking API at: $API_URL"
           
