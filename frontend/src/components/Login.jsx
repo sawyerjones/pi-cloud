@@ -23,16 +23,24 @@ const Login = () => {
         <Box
             sx={{
                 minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
             }}
         >
 
-            <Container component="main" maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+            <Container 
+                component="main" 
+                maxWidth="sm" 
+                sx={{ 
+                    position: 'relative', 
+                    zIndex: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '100vh',
+                    py: 2
+                }}
+            >
                 <Fade in timeout={800}>
                     <Card
                         sx={{
