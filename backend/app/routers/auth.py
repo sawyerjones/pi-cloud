@@ -25,6 +25,16 @@ async def login(login_data: LoginRequest):
         token_type="bearer"
     )
 
+@router.post("/demo", response_model=LoginResponse)
+async def demo_login():
+    # create a JWT for the demo user with same permissions
+    user = auth_service.get_or_create_demo_user()
+    access_token = auth_service.create_access_token({"sub": user["username"]})
+    return LoginResponse(
+        access_token=access_token,
+        token_type="bearer"
+    )
+
 @router.get("/me", response_model=UserInfo)
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     return UserInfo(

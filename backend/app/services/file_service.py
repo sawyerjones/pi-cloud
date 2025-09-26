@@ -2,7 +2,7 @@ import os
 import shutil
 import mimetypes
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import HTTPException, UploadFile
 from pathvalidate import is_valid_filename
 import aiofiles
@@ -17,6 +17,9 @@ class FileService:
         self.storage_path = Path(STORAGE_PATH)
         # make sure storage dir exists
         self.storage_path.mkdir(parents=True, exist_ok=True)
+        # demo uploads live under /demo
+        self.demo_root = self.storage_path / 'demo'
+        self.demo_root.mkdir(parents=True, exist_ok=True)
 
     def _get_safe_path(self, path: str) -> str:
         # normalize paths
@@ -31,13 +34,24 @@ class FileService:
         
         return full_path
     
-    async def list_directory(self, path: str = "/") -> DirectoryListing:
-        dir_path = self._get_safe_path(path)
+    def _get_user_path(self, path: str, current_user: dict = None) -> str:
+        if current_user and current_user.get("username") == "demo":
+            # for demo users, ensure all paths are under /demo
+            if not path.startswith("/demo"):
+                if path == "/":
+                    return "/demo"
+                else:
+                    return f"/demo{path}"
+        return path
+    
+    async def list_directory(self, path: str = "/", current_user: dict = None) -> DirectoryListing:
+        user_path = self._get_user_path(path, current_user)
+        dir_path = self._get_safe_path(user_path)
 
         if not dir_path.exists():
-            raise FileNotFoundError(path)
+            raise FileNotFoundError(user_path)
         if not dir_path.is_dir():
-            raise InvalidPathError(f"{path} is not a directory.")
+            raise InvalidPathError(f"{user_path} is not a directory.")
         
         # collect all children
         items = []
@@ -55,12 +69,12 @@ class FileService:
         items.sort(key=lambda x: (x.type != FileType.DIRECTORY, x.name.lower()))
         
         return DirectoryListing(
-            path=path,
+            path=user_path,
             items=items,
             total_items=len(items)
         )
 
-    async def upload_file(self, file: UploadFile, destination_path: str = "/"):
+    async def upload_file(self, file: UploadFile, destination_path: str = "/", current_user: dict = None):
         try:
             if file.size and file.size > MAX_FILE_SIZE:
                 # payload too large
@@ -68,8 +82,9 @@ class FileService:
             if not file.filename or not is_valid_filename(file.filename):
                 raise HTTPException(status_code=400, detail="Invalid filename")
             
-            # set destination
-            dest_dir = self._get_safe_path(destination_path)
+            # get user-specific path and set destination
+            user_path = self._get_user_path(destination_path, current_user)
+            dest_dir = self._get_safe_path(user_path)
             if not dest_dir.exists():
                 dest_dir.mkdir(parents=True, exist_ok=True)
             dest_file = dest_dir / file.filename
@@ -105,9 +120,10 @@ class FileService:
             raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
         
 
-    async def create_directory(self, path: str, name: str) -> dict:
+    async def create_directory(self, path: str, name: str, current_user: dict = None) -> dict:
         try:
-            parent_dir = self._get_safe_path(path)
+            user_path = self._get_user_path(path, current_user)
+            parent_dir = self._get_safe_path(user_path)
             new_dir = parent_dir / name
             
             if not is_valid_filename(name):
@@ -127,11 +143,12 @@ class FileService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Create directory failed: {str(e)}")
 
-    async def delete_file(self, path: str) -> dict:
-        try :
-            target_path = self._get_safe_path(path)
+    async def delete_file(self, path: str, current_user: dict = None) -> dict:
+        try:
+            user_path = self._get_user_path(path, current_user)
+            target_path = self._get_safe_path(user_path)
             if not target_path.exists():
-                raise FileNotFoundError(path)
+                raise FileNotFoundError(user_path)
             
             if target_path.is_dir():
                 shutil.rmtree(target_path)
@@ -140,19 +157,20 @@ class FileService:
                 target_path.unlink()
                 message = "File deleted successfully"
 
-            return {"message": message, "path": path}
+            return {"message": message, "path": user_path}
         
         except (FileNotFoundError, InvalidPathError):
             raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
         
-    async def download_file(self, path: str) -> Tuple[Path, str]:
+    async def download_file(self, path: str, current_user: dict = None) -> Tuple[Path, str]:
         # get safe path and media (MIME) type
         try:
-            target_path = self._get_safe_path(path)
+            user_path = self._get_user_path(path, current_user)
+            target_path = self._get_safe_path(user_path)
             if not target_path.exists():
-                raise FileNotFoundError(path)
+                raise FileNotFoundError(user_path)
             # TODO: handle downloading directories
             if target_path.is_dir():
                 raise HTTPException(status_code=400, detail="Cannot download directories")
@@ -165,3 +183,26 @@ class FileService:
             raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+
+    def cleanup_demo_uploads(self, max_age_hours: int = 2) -> int:
+        cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+        deleted = 0
+        try:
+            if not self.demo_root.exists():
+                return 0
+            for item in self.demo_root.rglob('*'):
+                try:
+                    stat = item.stat()
+                    modified = datetime.fromtimestamp(stat.st_mtime)
+                    if modified < cutoff:
+                        if item.is_dir():
+                            shutil.rmtree(item, ignore_errors=True)
+                        else:
+                            item.unlink(missing_ok=True)
+                        deleted += 1
+                except Exception:
+                    # ignore individual failures
+                    continue
+        except Exception:
+            return deleted
+        return deleted

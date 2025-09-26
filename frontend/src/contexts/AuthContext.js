@@ -65,6 +65,26 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const loginDemo = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await api.post('/auth/demo');
+            const { access_token } = response.data;
+            localStorage.setItem('authToken', access_token);
+            const userResponse = await api.get('/auth/me');
+            setUser(userResponse.data);
+            return { success: true }
+        } catch (error) {
+            // catch failed logins
+            const message = error.response?.data?.error || "Demo Login Failed";
+            setError(message);
+            return { sucess: false, error: message}
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const logout = () => {
         localStorage.removeItem('authToken');
         setUser(null);
@@ -72,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const values = {
-        user, loading, error, login, logout, isAuthenticated: !!user
+        user, loading, error, login, loginDemo, logout, isAuthenticated: !!user
     };
 
     return (

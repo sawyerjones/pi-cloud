@@ -5,6 +5,9 @@ from app.config import API_V1_PREFIX, CORS_ORIGINS
 from app.routers import health, auth, files
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi_utilities import repeat_every
+from contextlib import asynccontextmanager
+from app.services.file_service import FileService
 import logging
 
 # loggin set up
@@ -14,11 +17,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# app
+# app with lifespan to register repeated tasks (replaces deprecated on_event)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # --- startup ---
+    # trigger registration of repeated tasks
+    cleanup_demo_job()
+    yield
+    # --- shutdown ---
+
 app = FastAPI(
     title="Personal File Server",
     description="A secure file server for personal use",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
 )
 
 # exception handlers
@@ -51,6 +63,16 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router, prefix=API_V1_PREFIX)
 app.include_router(files.router, prefix=API_V1_PREFIX)
+
+@repeat_every(seconds=60*120)  # every 2 hours
+def cleanup_demo_job() -> None:
+    try:
+        service = FileService()
+        deleted = service.cleanup_demo_uploads(max_age_hours=2)
+        if deleted:
+            logger.info(f"Demo cleanup removed {deleted} items")
+    except Exception as e:
+        logger.error(f"Demo cleanup error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

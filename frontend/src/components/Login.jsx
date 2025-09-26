@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Card, CardContent, TextField, Button, Typography, Alert, CircularProgress, Container, Fade } from '@mui/material';
+import { Box, Card, CardContent, TextField, Button, Typography, Alert, CircularProgress, Container, Fade, Stack } from '@mui/material';
 import { CloudOutlined } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { login, loading, error } = useAuth();
+    const { login, loginDemo, loading, error } = useAuth();
 
     let navigate = useNavigate();
 
@@ -86,7 +86,7 @@ const Login = () => {
                                         fontWeight: 400,
                                     }}
                                 >
-                                    Secure cloud storage
+                                    Personal cloud storage
                                 </Typography>
                             </Box>
 
@@ -161,36 +161,56 @@ const Login = () => {
                                     }}
                                 />
 
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    variant="contained"
-                                    sx={{ 
-                                        mt: 3, 
-                                        mb: 2,
-                                        py: 1.5,
-                                        fontSize: '1rem',
-                                        fontWeight: 500,
-                                    }}
-                                    disabled={loading}
-                                    size="large"
-                                >
-                                    {loading ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <CircularProgress size={20} sx={{ color: 'white' }} />
-                                            <span>Signing in...</span>
-                                        </Box>
-                                    ) : (
-                                        'Sign In'
-                                    )}
-                                </Button>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        sx={{ 
+                                            py: 1.5,
+                                            fontSize: '1rem',
+                                            fontWeight: 500,
+                                        }}
+                                        disabled={loading}
+                                        size="large"
+                                    >
+                                        {loading ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <CircularProgress size={20} sx={{ color: 'white' }} />
+                                                <span>Signing in...</span>
+                                            </Box>
+                                        ) : (
+                                            'Sign In'
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={async () => {
+                                            const success = await loginDemo();
+                                            if (success) {
+                                                navigate('/files');
+                                            }
+                                        }}
+                                        fullWidth
+                                        variant="outlined"
+                                        size="large"
+                                        sx={{
+                                            py: 1.5,
+                                            fontSize: '1rem',
+                                            fontWeight: 500,
+                                            borderColor: 'rgba(0, 212, 255, 0.5)',
+                                            color: 'primary.main',
+                                            '&:hover': {
+                                                borderColor: 'primary.main',
+                                                background: 'rgba(0, 212, 255, 0.1)',
+                                            },
+                                        }}
+                                        disabled={loading}
+                                    >
+                                        Demo
+                                    </Button>
+                                </Stack>
                             </form>
-
-                            <Box sx={{ textAlign: 'center', mt: 2 }}>
-                                <Typography variant="caption" color="text.secondary">
-                                    Secure and reliable cloud storage
-                                </Typography>
-                            </Box>
+                            
                         </CardContent>
                     </Card>
                 </Fade>

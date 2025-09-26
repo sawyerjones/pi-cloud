@@ -41,6 +41,7 @@ import {
   SpeedOutlined,
 } from '@mui/icons-material';
 import { fileService } from '../services/file_service';
+import { useAuth } from '../contexts/AuthContext';
 import FileUpload from './FileUpload';
 
 const FileBrowser = ({ 
@@ -50,11 +51,13 @@ const FileBrowser = ({
   refreshTrigger,
   onRefresh 
 }) => {
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   // State management
-  const [currentPath, setCurrentPath] = useState(propCurrentPath || '/');
+  const defaultPath = user?.username === 'demo' ? '/demo' : '/';
+  const [currentPath, setCurrentPath] = useState(propCurrentPath !== undefined ? propCurrentPath : defaultPath);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -66,6 +69,7 @@ const FileBrowser = ({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   useEffect(() => {
     if (propCurrentPath !== undefined) {
@@ -74,8 +78,21 @@ const FileBrowser = ({
   }, [propCurrentPath]);
 
   useEffect(() => {
+    if (propCurrentPath === undefined) {
+      setCurrentPath(user?.username === 'demo' ? '/demo' : '/');
+    }
+  }, [user, propCurrentPath]);
+
+  useEffect(() => {
     loadDirectory(currentPath);
   }, [currentPath, refreshTrigger]);
+
+  // Show demo modal for demo users
+  useEffect(() => {
+    if (user?.username === 'demo') {
+      setShowDemoModal(true);
+    }
+  }, [user]);
 
   const loadDirectory = async (path) => {
     try {
@@ -696,6 +713,85 @@ const FileBrowser = ({
             disabled={!newFolderName.trim()}
           >
             Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Demo Welcome Modal */}
+      <Dialog 
+        open={showDemoModal} 
+        onClose={() => setShowDemoModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(20, 20, 30, 0.95)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(0, 212, 255, 0.3)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            borderRadius: 3,
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          color: 'primary.main', 
+          fontWeight: 600,
+          textAlign: 'center',
+          fontSize: '1.5rem',
+          pt: 4,
+          pb: 2
+        }}>
+          Welcome to the pi cloud demo
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', px: 4, pb: 2 }}>
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: '1.1rem',
+              lineHeight: 1.6,
+              mb: 3
+            }}
+          >
+            Any files you upload will be deleted after two hours. Do not upload ANY potentially sensitive information. Both I and any other viewers of the demo will be able to view it. 
+          </Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            mb: 2
+          }}>
+            <CloudOutlined 
+              sx={{ 
+                fontSize: 48, 
+                color: 'primary.main',
+                opacity: 0.7,
+                filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.3))'
+              }} 
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ 
+          justifyContent: 'center', 
+          p: 4,
+          pt: 2
+        }}>
+          <Button 
+            onClick={() => setShowDemoModal(false)}
+            variant="contained"
+            size="large"
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontSize: '1rem',
+              fontWeight: 500,
+              background: 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #4ddbff 0%, #00d4ff 100%)',
+                boxShadow: '0 8px 25px rgba(0, 212, 255, 0.4)',
+              },
+            }}
+          >
+            Got it, let's start!
           </Button>
         </DialogActions>
       </Dialog>

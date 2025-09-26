@@ -35,6 +35,14 @@ class AuthService:
                 "permissions": ["read", "write", "delete"],
             }
         }
+        # demo user: no password required via special endpoint
+        self.DEMO_USERNAME = "demo"
+        self.USERS[self.DEMO_USERNAME] = {
+            "username": self.DEMO_USERNAME,
+            "hashed_password": pwd_context.hash(os.getenv('DEMO_PLACEHOLDER_PASSWORD', 'demo')), 
+            "is_active": True,
+            "permissions": ["read", "write", "delete"],
+        }
         self._initialized = True
 
     def verifyPassword(self, plain_password: str, hashed_password: str) -> bool:
@@ -53,6 +61,19 @@ class AuthService:
         if not password_valid:
             return None
         
+        return user
+
+    def get_or_create_demo_user(self):
+        # ensure demo user exists and return its record
+        user = self.USERS.get(self.DEMO_USERNAME)
+        if not user:
+            user = {
+                "username": self.DEMO_USERNAME,
+                "hashed_password": pwd_context.hash(os.getenv('DEMO_PLACEHOLDER_PASSWORD', 'demo')),
+                "is_active": True,
+                "permissions": ["read", "write", "delete"],
+            }
+            self.USERS[self.DEMO_USERNAME] = user
         return user
     
     @staticmethod
