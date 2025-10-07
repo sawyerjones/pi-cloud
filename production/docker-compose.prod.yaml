@@ -6,16 +6,16 @@ services:
     container_name: fileserver-backend-prod
     restart: unless-stopped
     volumes:
-    - storage_data:/app/storage
+      - storage_data:/app/storage
     environment:
-    - ENV=production
-    - DEBUG=false
+      - ENV=production
+      - DEBUG=false
     env_file:
       - ./backend/.env
     secrets:
-    - jwt_secret
+      - jwt_secret
     networks:
-    - internal
+      - internal
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 60s
@@ -39,10 +39,10 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
+      # No need for 443 anymore
     volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx.cloudflare.conf:/etc/nginx/nginx.conf:ro
+      # No need for SSL certs
       - ./logs:/var/log/nginx:rw
     networks:
       - internal
