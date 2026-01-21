@@ -16,8 +16,16 @@ def get_jwt_secret():
     env_secret = os.getenv('JWT_SECRET')
     if env_secret:
         return env_secret
+    
+    # fallback: return None if no secret found
+    # This will cause an error but allows the app to start for debugging
+    return None
 
 SECRET_KEY = get_jwt_secret()
+
+# Validate SECRET_KEY is set
+if SECRET_KEY is None:
+    raise ValueError("JWT_SECRET must be set either as a Docker secret or environment variable")
 DEBUG = config("DEBUG", cast=bool)
 
 STORAGE_PATH = config("STORAGE_PATH")
