@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- startup ---
-    # trigger registration of repeated tasks
-    cleanup_demo_job()
+    # The @repeat_every decorator automatically registers the cleanup_demo_job
+    # No need to call it manually - it will run on schedule
     yield
     # --- shutdown ---
 
