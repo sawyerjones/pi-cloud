@@ -18,25 +18,19 @@ jobs:
         id: api-check
         run: |
           API_URL="https://pi-cloud.xyz/health"
-
           echo "Checking API at: $API_URL"
           
-          if curl -f -s -o /dev/null -w "%{http_code}" --max-time 30 --connect-timeout 10 "$API_URL" > response_code.txt; then
-          RESPONSE_CODE=$(cat response_code.txt)
+          RESPONSE_CODE="$(curl -sS -L -o /dev/null -w "%{http_code}" \
+            --max-time 30 --connect-timeout 10 "$API_URL")"
+          
+          echo "HTTP status: $RESPONSE_CODE"
+          
           if [ "$RESPONSE_CODE" -ge 200 ] && [ "$RESPONSE_CODE" -lt 300 ]; then
-            echo "API is healthy - HTTP $RESPONSE_CODE"
-            echo "status=success" >> $GITHUB_OUTPUT
-            echo "message=API is responding with HTTP $RESPONSE_CODE" >> $GITHUB_OUTPUT
+            echo "status=success" >> "$GITHUB_OUTPUT"
+            echo "message=API is responding with HTTP $RESPONSE_CODE" >> "$GITHUB_OUTPUT"
           else
-            echo "API returned HTTP $RESPONSE_CODE"
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "message=API returned HTTP $RESPONSE_CODE" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          else
-            echo "API check failed - connection error or timeout"
-            echo "status=failure" >> $GITHUB_OUTPUT
-            echo "message=API check failed - connection error or timeout" >> $GITHUB_OUTPUT
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+            echo "message=API returned HTTP $RESPONSE_CODE" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           
